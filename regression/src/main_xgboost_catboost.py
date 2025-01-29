@@ -26,7 +26,7 @@ def plot_predictions(y_test, predictions_dict, title="Actual vs Predictions"):
 
 def main():
     # Initialize components
-    data_loader = DataLoader('../data/multistep_regression.csv')
+    data_loader = DataLoader('regression//data/multistep_regression.csv')
     preprocessor = TimeSeriesPreprocessor()
     
     # Load and preprocess data

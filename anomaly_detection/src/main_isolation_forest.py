@@ -12,7 +12,7 @@ sys.path.append('../src/models')
 
 def main():
 
-    dataloader = AnomalyDataLoader('../data')
+    dataloader = AnomalyDataLoader('anomaly_detection/data')
     dataset_dict = dataloader.load_all_data()
     df1 = dataset_dict["dataset1"]
     df2 = dataset_dict["dataset2"]
