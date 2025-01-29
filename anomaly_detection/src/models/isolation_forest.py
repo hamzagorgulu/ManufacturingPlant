@@ -1,5 +1,5 @@
 import numpy as np
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, Tuple
 from sklearn.ensemble import IsolationForest
 from .base_model import BaseAnomalyDetector
 
@@ -75,3 +75,26 @@ class IsolationForestDetector(BaseAnomalyDetector):
         """
         scores = self.score_samples(X)
         return np.percentile(scores, contamination * 100) 
+    
+    def get_individual_prediction_intervals(self, X: np.ndarray, confidence: float = 0.95) -> Tuple[np.ndarray, np.ndarray]:
+        """
+        Calculate individual prediction intervals for each sample using the ensemble of trees.
+        
+        Args:
+            X (np.ndarray): Input data
+            confidence (float): Confidence level for the interval (e.g., 0.95 for 95% confidence)
+            
+        Returns:
+            Tuple[np.ndarray, np.ndarray]: Lower and upper bounds of the prediction intervals for each sample
+        """
+        # Get the anomaly scores from each tree in the ensemble
+        tree_scores = np.array([tree.score_samples(X) for tree in self.model.estimators_])
+        
+        # Calculate the lower and upper percentiles for each sample
+        lower_percentile = (1 - confidence) / 2 * 100
+        upper_percentile = (1 + confidence) / 2 * 100
+        
+        lower_bounds = np.percentile(tree_scores, lower_percentile, axis=0)
+        upper_bounds = np.percentile(tree_scores, upper_percentile, axis=0)
+        
+        return lower_bounds, upper_bounds

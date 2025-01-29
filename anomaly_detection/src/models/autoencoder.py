@@ -133,7 +133,7 @@ class AutoencoderDetector(BaseAnomalyDetector):
             **kwargs: Additional training parameters
         """
         # Convert data to PyTorch tensors
-        X_tensor = torch.FloatTensor(X).to(self.device)
+        X_tensor = torch.FloatTensor(X.to_numpy()).to(self.device)
         dataset = TensorDataset(X_tensor)
         train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
         

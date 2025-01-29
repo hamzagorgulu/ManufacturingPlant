@@ -22,24 +22,28 @@ class AnomalyEvaluator:
         Returns:
             Dict containing various metrics
         """
+        tp = np.sum((y_true == 1) & (y_pred == 1))
+        fp = np.sum((y_true == 0) & (y_pred == 1))
+        tn = np.sum((y_true == 0) & (y_pred == 0))
+        fn = np.sum((y_true == 1) & (y_pred == 0))
         precision = precision_score(y_true, y_pred)
         recall = recall_score(y_true, y_pred)
         f1 = f1_score(y_true, y_pred)
         
         # Calculate AUROC
         fpr, tpr, _ = roc_curve(y_true, scores)
-        auroc = auc(fpr, tpr)
         
         # Calculate AUPRC
         precision_curve, recall_curve, _ = precision_recall_curve(y_true, scores)
-        auprc = auc(recall_curve, precision_curve)
         
         return {
+            'true_positive': tp,
+            'false_positive': fp,
+            'true_negative': tn,
+            'false_negative': fn,
             'precision': precision,
             'recall': recall,
-            'f1_score': f1,
-            'auroc': auroc,
-            'auprc': auprc
+            'f1_score': f1
         }
     
     @staticmethod

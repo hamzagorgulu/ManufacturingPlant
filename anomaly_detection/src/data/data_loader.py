@@ -38,18 +38,24 @@ class AnomalyDataLoader:
         
         # Load data
         df = pd.read_csv(file_path)
+
+        rename_cols = {
+            'Date': 'datetime',
+            'Value': 'motor_current'
+        }
+
+        df = df.rename(columns=rename_cols)
         
         # Convert Date to datetime
-        df['Date'] = pd.to_datetime(df['Date'])
-        df = df.set_index('Date')
+        df['datetime'] = pd.to_datetime(df['datetime'])
+        df['date'] = pd.to_datetime(df['datetime'].dt.date)
+
+        # Set datetime as index
+        df = df.set_index('datetime')
         
         # Sort by timestamp
         df = df.sort_index()
-        
-        # Add time to failure information
-        failure_date = self.failure_dates[dataset_name]
-        df['time_to_failure'] = (failure_date - df.index).total_seconds() / 3600  # hours until failure
-        
+                
         return df
     
     def load_all_data(self) -> Dict[str, pd.DataFrame]:
@@ -65,38 +71,32 @@ class AnomalyDataLoader:
         }
     
     def split_data(self, df: pd.DataFrame, 
-                  train_ratio: float = 0.7,
-                  val_ratio: float = 0.15) -> Dict[str, pd.DataFrame]:
+                train_end_date: str, 
+                test_normal_end_date: str) -> Dict[str, pd.DataFrame]:
         """
-        Split data into train, validation, and test sets.
-        Note: For anomaly detection, we typically use only normal data for training.
+        Split data into train, validation, and test sets based on dates.
         
         Args:
             df (pd.DataFrame): Input dataframe
-            train_ratio (float): Ratio of training data
-            val_ratio (float): Ratio of validation data
+            train_end_date (str): End date for training data (format: 'YYYY-MM-DD')
+            val_end_date (str): End date for validation data (format: 'YYYY-MM-DD')
             
         Returns:
             Dict[str, pd.DataFrame]: Dictionary containing split datasets
         """
-        # Find the point where time_to_failure is sufficiently large (normal operation)
-        normal_data = df[df['time_to_failure'] > 168]  # More than 1 week from failure
-        anomaly_data = df[df['time_to_failure'] <= 168]  # Within 1 week of failure
+        # Convert date strings to pandas Timestamp
+        train_end_date = pd.Timestamp(train_end_date)
+        test_normal_end_date = pd.Timestamp(test_normal_end_date)
         
-        # Split normal data
-        n = len(normal_data)
-        train_idx = int(n * train_ratio)
-        val_idx = int(n * (train_ratio + val_ratio))
-        
-        train_data = normal_data.iloc[:train_idx]
-        val_data = normal_data.iloc[train_idx:val_idx]
-        test_data = pd.concat([normal_data.iloc[val_idx:], anomaly_data])
-        test_data = test_data.sort_index()
+        # Split data based on dates
+        train_data = df[df.index <= train_end_date]
+        test_normal_data = df[(df.index > train_end_date) & (df.index <= test_normal_end_date)]
+        test_anomaly_data = df[df.index > test_normal_end_date]
         
         return {
             'train': train_data,
-            'val': val_data,
-            'test': test_data
+            'test_normal': test_normal_data,
+            'test_anomaly': test_anomaly_data
         }
     
     def get_sampling_rate(self, df: pd.DataFrame) -> float:
