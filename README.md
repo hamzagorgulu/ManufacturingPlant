@@ -96,3 +96,18 @@ The regression pipeline implements:
 - MAPE: 31.48%
 
 The results indicate that CatBoost achieves the best performance across all evaluation metrics for the multi-step regression task.
+
+
+## Presentation
+
+### Task 1 - Motor current anomaly detection
+How did you decide the normal-anomaly days? -specified
+Showcase a scoring mechanism that you did not include in the python files.
+Justify the feature engineering choices. -justified
+The task says you need to compare the performances of multiple models but you just give one(isolation forest). Also include that.
+
+TODO: do the scoring analysis, then move the task 2, finish it, then if you have time, build the second model.
+
+### Task 2 - Water inflow regression to hydro electric power plant
+Both traditional(catboost) and deep learning based(lstm) methods are included.
+There is no prediction intervals and decision making analysis, but it is asked. Do that. Use bootstrapping and mapie regressor to get the intervals and do some analysis.
