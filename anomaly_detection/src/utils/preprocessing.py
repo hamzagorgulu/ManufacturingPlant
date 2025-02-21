@@ -50,6 +50,10 @@ class AnomalyPreprocessor:
             return scaled_features
         return features.values
     
+    def compute_fft(self, window):
+        fft_result = np.fft.fft(window)  # Compute FFT for the window
+        return np.abs(fft_result[1])
+    
     def get_feature_names(self) -> List[str]:
         """Get list of feature names."""
         return self.feature_names
@@ -90,9 +94,6 @@ class AnomalyPreprocessor:
         # rolling standard deviation
         df['STD'] = df[column].rolling(window=60*20).std()
 
-        # Fourier transform, use numpy
-        df['FT'] = np.fft.fft(df[column])
-        # convert complex numbers to real numbers
-        df['FT'] = df['FT'].apply(lambda x: np.abs(x))
+        df['FT'] = df[column].rolling(window=60*20).apply(compute_fft, raw=True)
 
         return df
